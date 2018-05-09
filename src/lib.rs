@@ -9,11 +9,22 @@ pub struct HexFmt<'a>(&'a [u8]);
 
 impl<'a> HexFmt<'a> {
     fn fmt(&self, fmtr: &mut Formatter, uppercase: bool) -> Result {
-        for octet in self.0.iter() {
+        let octets_per_row = fmtr.width().unwrap_or(0);
+        let mut in_row = 0;
+
+        for (i, octet) in self.0.iter().enumerate() {
             if uppercase {
                 write!(fmtr, "{:02X}", octet)?;
             } else {
                 write!(fmtr, "{:02x}", octet)?;
+            }
+
+            if i+1 < self.0.len() {
+                in_row += 1;
+                if 0 < octets_per_row && in_row == octets_per_row {
+                    write!(fmtr, "\n")?;
+                    in_row = 0;
+                }
             }
         }
         Ok(())
@@ -68,5 +79,24 @@ mod tests {
     #[test]
     fn uppercase_octet() {
         assert_eq!("FF", format!("{:X}", hex(&[0xff])));
+    }
+
+    #[test]
+    fn breaks_between_lines_1() {
+        assert_eq!("AA\nBB", format!("{:1X}", hex(&[0xaa, 0xbb])));
+    }
+
+    #[test]
+    fn four_octets_rowlimit_2_makes_2_lines() {
+        assert_eq!(
+            "AABB\nCCDD",
+            format!("{:2X}", hex(&[0xaa, 0xbb, 0xcc, 0xdd])));
+    }
+
+    #[test]
+    fn five_octets_rowlimit_2_makes_3_lines() {
+        assert_eq!(
+            "AABB\nCCDD\nEE",
+            format!("{:2X}", hex(&[0xaa, 0xbb, 0xcc, 0xdd, 0xee])));
     }
 }

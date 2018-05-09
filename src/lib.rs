@@ -10,7 +10,9 @@ pub struct HexFmt<'a>(&'a [u8]);
 impl<'a> HexFmt<'a> {
     fn fmt(&self, fmtr: &mut Formatter, uppercase: bool) -> Result {
         let octets_per_row = fmtr.width().unwrap_or(0);
+        let octets_per_group = fmtr.precision().unwrap_or(0);
         let mut in_row = 0;
+        let mut in_group = 0;
 
         for (i, octet) in self.0.iter().enumerate() {
             if uppercase {
@@ -21,9 +23,14 @@ impl<'a> HexFmt<'a> {
 
             if i+1 < self.0.len() {
                 in_row += 1;
+                in_group += 1;
                 if 0 < octets_per_row && in_row == octets_per_row {
                     write!(fmtr, "\n")?;
                     in_row = 0;
+                }
+                if 0 < octets_per_group && in_group == octets_per_group {
+                    write!(fmtr, " ")?;
+                    in_group = 0;
                 }
             }
         }
@@ -98,5 +105,17 @@ mod tests {
         assert_eq!(
             "AABB\nCCDD\nEE",
             format!("{:2X}", hex(&[0xaa, 0xbb, 0xcc, 0xdd, 0xee])));
+    }
+
+    #[test]
+    fn two_octets_grouplimit_1_makes_2_groups() {
+        assert_eq!("11 22", format!("{:.1x}", hex(&[0x11, 0x22])));
+    }
+
+    #[test]
+    fn five_octets_grouplimit_2_makes_3_groups() {
+        assert_eq!(
+            "1122 3344 55",
+            format!("{:.2x}", hex(&[0x11, 0x22, 0x33, 0x44, 0x55])));
     }
 }

@@ -7,21 +7,28 @@ use core::fmt::{Formatter, LowerHex, UpperHex, Result};
 
 pub struct HexFmt<'a>(&'a [u8]);
 
-impl<'a> LowerHex for HexFmt<'a> {
-    fn fmt(&self, fmtr: &mut Formatter) -> Result {
+impl<'a> HexFmt<'a> {
+    fn fmt(&self, fmtr: &mut Formatter, uppercase: bool) -> Result {
         for octet in self.0.iter() {
-            write!(fmtr, "{:02x}", octet)?;
+            if uppercase {
+                write!(fmtr, "{:02X}", octet)?;
+            } else {
+                write!(fmtr, "{:02x}", octet)?;
+            }
         }
         Ok(())
     }
 }
 
+impl<'a> LowerHex for HexFmt<'a> {
+    fn fmt(&self, fmtr: &mut Formatter) -> Result {
+        self.fmt(fmtr, false)
+    }
+}
+
 impl<'a> UpperHex for HexFmt<'a> {
     fn fmt(&self, fmtr: &mut Formatter) -> Result {
-        for octet in self.0.iter() {
-            write!(fmtr, "{:02X}", octet)?;
-        }
-        Ok(())
+        self.fmt(fmtr, true)
     }
 }
 

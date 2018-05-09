@@ -27,6 +27,7 @@ impl<'a> HexFmt<'a> {
                 if 0 < octets_per_row && in_row == octets_per_row {
                     write!(fmtr, "\n")?;
                     in_row = 0;
+                    in_group = 0;
                 }
                 if 0 < octets_per_group && in_group == octets_per_group {
                     write!(fmtr, " ")?;
@@ -117,5 +118,13 @@ mod tests {
         assert_eq!(
             "1122 3344 55",
             format!("{:.2x}", hex(&[0x11, 0x22, 0x33, 0x44, 0x55])));
+    }
+
+    #[test]
+    fn groups_and_rows_play_nice() {
+        assert_eq!(
+            "1122 3344 55\na0b0 c0",
+             format!("{:5.2x}",
+                     hex(&[0x11, 0x22, 0x33, 0x44, 0x55, 0xa0, 0xb0, 0xc0])));
     }
 }

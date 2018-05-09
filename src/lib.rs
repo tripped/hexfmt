@@ -3,7 +3,7 @@
 //! Format-controlled hexadecimal output.
 
 #![no_std]
-use core::fmt::{Formatter, LowerHex, Result};
+use core::fmt::{Formatter, LowerHex, UpperHex, Result};
 
 pub struct HexFmt<'a>(&'a [u8]);
 
@@ -11,6 +11,15 @@ impl<'a> LowerHex for HexFmt<'a> {
     fn fmt(&self, fmtr: &mut Formatter) -> Result {
         for octet in self.0.iter() {
             write!(fmtr, "{:02x}", octet)?;
+        }
+        Ok(())
+    }
+}
+
+impl<'a> UpperHex for HexFmt<'a> {
+    fn fmt(&self, fmtr: &mut Formatter) -> Result {
+        for octet in self.0.iter() {
+            write!(fmtr, "{:02X}", octet)?;
         }
         Ok(())
     }
@@ -47,5 +56,10 @@ mod tests {
     #[test]
     fn several_octets() {
         assert_eq!("01020f", format!("{:x}", hex(&[0x01, 0x02, 0x0f])));
+    }
+
+    #[test]
+    fn uppercase_octet() {
+        assert_eq!("FF", format!("{:X}", hex(&[0xff])));
     }
 }

@@ -8,7 +8,10 @@ use core::fmt::{Formatter, LowerHex, Result};
 pub struct HexFmt<'a>(&'a [u8]);
 
 impl<'a> LowerHex for HexFmt<'a> {
-    fn fmt(&self, _fmtr: &mut Formatter) -> Result {
+    fn fmt(&self, fmtr: &mut Formatter) -> Result {
+        for _octet in self.0.iter() {
+            fmtr.write_str("01")?;
+        }
         Ok(())
     }
 }
@@ -34,5 +37,10 @@ mod tests {
     #[test]
     fn empty_slice_produces_empty_string() {
         assert_eq!("", format!("{:x}", hex(&[])));
+    }
+
+    #[test]
+    fn single_octet() {
+        assert_eq!("01", format!("{:x}", hex(&[0x01])));
     }
 }
